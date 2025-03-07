@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào Mừng 8/3</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: pink; overflow: hidden; }
+        .page { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; background-color: pink; color: black; font-size: 2rem; }
+        .hidden { display: none; }
+        .big-text { font-size: 5rem; font-weight: bold; position: relative; z-index: 10; }
+        .falling { position: absolute; top: -50px; font-size: 2rem; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <canvas id="fireworksCanvas"></canvas>
+
+    <div id="page1" class="page">
+        <div>
+            <h1>Đếm Ngược: <span id="countdown">00:00:15.000</span></h1>
+        </div>
+    </div>
+    
+    <div id="page2" class="page hidden">
+        <div style="width: 80vw; background-color: pink; padding: 20px; border-radius: 10px;">
+            <p id="typingText"></p>
+        </div>
+    </div>
+
+    <div id="page3" class="page hidden">
+        <div class="big-text" id="bigText">8A mãi đỉnh<br>Chào mừng 8/3/2025</div>
+    </div>
+
+    <script>
+        function startCountdown() {
+            let time = 15000;
+            let countdownEl = document.getElementById("countdown");
+
+            let interval = setInterval(() => {
+                let hours = Math.floor(time / 3600000);
+                let minutes = Math.floor((time % 3600000) / 60000);
+                let seconds = Math.floor((time % 60000) / 1000);
+                let milliseconds = time % 1000;
+
+                countdownEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+
+                time -= 10;  
+
+                if (time <= 0) {
+                    clearInterval(interval);
+                    switchPage(1);
+                }
+            }, 10);
+            
+            createFallingElement("🌺", 15000, "page1"); 
+        }
+
+        function switchPage(page) {
+            if (page === 1) {
+                document.getElementById("page1").classList.add("hidden");
+                document.getElementById("page2").classList.remove("hidden");
+                typeText("typingText", `Ngày Quốc tế Phụ nữ hay còn gọi là Ngày Liên Hợp Quốc vì Nữ quyền và Hòa bình Quốc tế được tổ chức vào ngày 8 tháng 3 hằng năm với vai trò là tâm điểm trong phong trào đấu tranh vì quyền của phụ nữ, thu hút sự chú ý đến các vấn đề như bình đẳng giới, quyền sinh sản, chống bạo lực và lạm dụng đối với phụ nữ. Ngày này được Liên Hợp Quốc chính thức hóa vào năm 1975.`, 50);
+                createFallingElement("❄️", 30000, "page2");  
+
+                setTimeout(() => {
+                    createFallingElement("🌸", Infinity, "page3");
+                    createFallingElement("💮", Infinity, "page3");
+                    createFallingElement("❄️", Infinity, "page3");
+                    startFireworks();  
+                }, 28000);
+
+                setTimeout(() => switchPage(2), 30000);
+            } else if (page === 2) {
+                document.getElementById("page2").classList.add("hidden");
+                document.getElementById("page3").classList.remove("hidden");
+                typeText("bigText", "8A mãi đỉnh\nChào mừng 8/3/2025", 100);
+            }
+        }
+
+        function typeText(elementId, text, speed) {
+            let i = 0;
+            let element = document.getElementById(elementId);
+            element.innerHTML = "";
+            let interval = setInterval(() => {
+                element.innerHTML += text[i] === "\n" ? "<br>" : text[i];
+                i++;
+                if (i >= text.length) clearInterval(interval);
+            }, speed);
+        }
+
+        function createFallingElement(symbol, duration, containerId) {
+            let container = document.getElementById(containerId);
+            let interval = setInterval(() => {
+                let elem = document.createElement("div");
+                elem.textContent = symbol;
+                elem.classList.add("falling");
+                elem.style.left = Math.random() * window.innerWidth + "px";
+                elem.style.animation = `fall ${Math.random() * 3 + 2}s linear infinite`;
+                container.appendChild(elem);
+                setTimeout(() => elem.remove(), duration);
+            }, 200);
+            
+            if (duration !== Infinity) {
+                setTimeout(() => clearInterval(interval), duration);
+            }
+        }
+
+        function startFireworks() {
+            const canvas = document.getElementById("fireworksCanvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let fireworks = [];
+
+            function createFirework() {
+                const textEl = document.getElementById("bigText");
+                const rect = textEl.getBoundingClientRect();
+                const x = rect.left + Math.random() * rect.width;
+                const y = rect.top + Math.random() * rect.height;
+                const colors = ["red", "yellow", "blue", "green", "purple", "orange"];
+                let particles = [];
+                for (let i = 0; i < 50; i++) { 
+                    particles.push({
+                        x: x,
+                        y: y,
+                        speedX: (Math.random() - 0.5) * 5,
+                        speedY: (Math.random() - 0.5) * 5,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        life: 50
+                    });
+                }
+                fireworks.push(particles);
+            }
+
+            function drawFireworks() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < fireworks.length; i++) {
+                    let particles = fireworks[i];
+                    for (let j = 0; j < particles.length; j++) {
+                        let p = particles[j];
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        p.life--;
+                    }
+                    fireworks[i] = particles.filter(p => p.life > 0);
+                }
+                fireworks = fireworks.filter(f => f.length > 0);
+            }
+
+            function loop() {
+                drawFireworks();
+                requestAnimationFrame(loop);
+            }
+
+            setInterval(createFirework, 500); 
+            loop();
+        }
+
+        window.onload = startCountdown;
+    </script>
+
+    <style>
+        @keyframes fall {
+            from { transform: translateY(-50px); opacity: 1; }
+            to { transform: translateY(100vh); opacity: 0; }
+        }
+    </style>
+</body>
+</html>
